@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Tap — Coffee Break Games</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .color-buttons {
+      max-width: 340px;
+      margin: 1rem auto;
+    }
+    .color-btn {
+      width: 120px;
+      height: 120px;
+    }
+    @media (max-width: 400px) {
+      .color-btn { width: 90px; height: 90px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-text">Tap the COLOR meaning, not the ink!</div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div class="result-overlay hidden" id="result-overlay">
+    <h2>Time's Up!</h2>
+    <div class="result-score" id="result-score">0</div>
+    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+    </div>
+  </div>
+
+  <div class="game-page">
+    <div class="game-header">
+      <a href="../index.html" class="btn btn-back">← Back</a>
+      <h2>🎨 Color Tap</h2>
+      <div class="score-display">
+        <span class="score-value" id="score">0</span>
+        <span>pts</span>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-container">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+    <div class="timer-label" style="display:flex;justify-content:space-between;">
+      <span class="streak-display">🔥 Streak: <span id="streak">0</span></span>
+      <span id="timer-label">60s</span>
+    </div>
+
+    <!-- Game Area -->
+    <div id="game-area">
+      <div class="color-word" id="color-word">RED</div>
+      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:-0.5rem;">
+        Tap the button that matches the <strong style="color:var(--accent)">word meaning</strong>
+      </p>
+      <div class="color-buttons" id="color-buttons">
+        <button class="color-btn" data-idx="0"></button>
+        <button class="color-btn" data-idx="1"></button>
+        <button class="color-btn" data-idx="2"></button>
+        <button class="color-btn" data-idx="3"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/progress.js"></script>
+  <script>
+  (() => {
+    const COLORS = {
+      red:    '#e74c3c',
+      blue:   '#3498db',
+      green:  '#2ecc71',
+      yellow: '#f1c40f',
+      purple: '#9b59b6',
+      orange: '#e67e22',
+    };
+    const COLOR_NAMES = Object.keys(COLORS);
+
+    let score = 0;
+    let streak = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let gameActive = false;
+    let correctColorName = '';
+    let questionStartTime = 0;
+    let totalCorrect = 0;
+    let totalAnswered = 0;
+    let buttonsLocked = false;
+
+    const TOTAL_TIME = 60;
+
+    const colorWordEl  = document.getElementById('color-word');
+    const colorBtns    = Array.from(document.querySelectorAll('.color-btn'));
+    const scoreEl      = document.getElementById('score');
+    const streakEl     = document.getElementById('streak');
+    const timerBar     = document.getElementById('timer-bar');
+    const timerLabel   = document.getElementById('timer-label');
+    const resultOverlay= document.getElementById('result-overlay');
+    const resultScore  = document.getElementById('result-score');
+    const newBestBadge = document.getElementById('new-best-badge');
+    const resultDetail = document.getElementById('result-detail');
+    const btnPlayAgain = document.getElementById('btn-play-again');
+    const gameArea     = document.getElementById('game-area');
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function loadRound() {
+      if (!gameActive) return;
+      buttonsLocked = false;
+
+      // Pick word meaning
+      correctColorName = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
+
+      // Pick ink color — different from the word meaning
+      let inkName;
+      do { inkName = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)]; }
+      while (inkName === correctColorName);
+
+      colorWordEl.textContent = correctColorName.toUpperCase();
+      colorWordEl.style.color = COLORS[inkName];
+
+      // Build 4 buttons: correct + 3 random distractors
+      const distractors = shuffle(COLOR_NAMES.filter(c => c !== correctColorName)).slice(0, 3);
+      const options = shuffle([correctColorName, ...distractors]);
+
+      colorBtns.forEach((btn, i) => {
+        btn.style.background = COLORS[options[i]];
+        btn.dataset.color = options[i];
+        btn.className = 'color-btn';
+      });
+
+      questionStartTime = Date.now();
+    }
+
+    function addScore(pts) {
+      score = Math.max(0, score + pts);
+      scoreEl.textContent = score;
+    }
+
+    function handleColorTap(btn) {
+      if (!gameActive || buttonsLocked) return;
+      buttonsLocked = true;
+      totalAnswered++;
+
+      const elapsed = (Date.now() - questionStartTime) / 1000;
+      const tapped = btn.dataset.color;
+
+      if (tapped === correctColorName) {
+        btn.classList.add('correct-flash');
+        let pts = 100;
+        if (elapsed < 1) pts += 50;
+        addScore(pts);
+        streak++;
+        totalCorrect++;
+        streakEl.textContent = streak;
+        setTimeout(loadRound, 350);
+      } else {
+        btn.classList.add('wrong-flash');
+        gameArea.classList.remove('shake');
+        void gameArea.offsetWidth;
+        gameArea.classList.add('shake');
+        addScore(-20);
+        streak = 0;
+        streakEl.textContent = 0;
+        setTimeout(loadRound, 500);
+      }
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+
+      const isNew = CBGProgress.saveScore('color-tap', score);
+      resultScore.textContent = score;
+      newBestBadge.classList.toggle('hidden', !isNew);
+      const acc = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+      resultDetail.textContent = `✅ ${totalCorrect} correct · 🎯 ${acc}% accuracy`;
+      resultOverlay.classList.remove('hidden');
+    }
+
+    function startTimer() {
+      timerBar.style.width = '100%';
+      timerLabel.textContent = `${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const pct = (timeLeft / TOTAL_TIME) * 100;
+        timerBar.style.width = `${pct}%`;
+        timerLabel.textContent = `${timeLeft}s`;
+        if (timeLeft <= 10) timerBar.classList.add('danger');
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function startGame() {
+      score = 0;
+      streak = 0;
+      timeLeft = 60;
+      totalCorrect = 0;
+      totalAnswered = 0;
+      buttonsLocked = false;
+      scoreEl.textContent = '0';
+      streakEl.textContent = '0';
+      timerBar.classList.remove('danger');
+      resultOverlay.classList.add('hidden');
+      gameActive = true;
+      loadRound();
+      startTimer();
+    }
+
+    function runCountdown(cb) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numEl   = document.getElementById('countdown-num');
+      let n = 3;
+      numEl.textContent = n;
+      const tick = () => {
+        n--;
+        if (n <= 0) {
+          numEl.textContent = 'GO!';
+          setTimeout(() => { overlay.classList.add('hidden'); cb(); }, 600);
+          return;
+        }
+        numEl.textContent = n;
+        setTimeout(tick, 1000);
+      };
+      setTimeout(tick, 1000);
+    }
+
+    colorBtns.forEach(btn => btn.addEventListener('click', () => handleColorTap(btn)));
+    btnPlayAgain.addEventListener('click', () => { clearInterval(timerInterval); startGame(); });
+
+    runCountdown(startGame);
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Sprint — Coffee Break Games</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-text">Warm up your brain!</div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div class="result-overlay hidden" id="result-overlay">
+    <h2>Time's Up!</h2>
+    <div class="result-score" id="result-score">0</div>
+    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+    </div>
+  </div>
+
+  <div class="game-page">
+    <div class="game-header">
+      <a href="../index.html" class="btn btn-back">← Back</a>
+      <h2>🔢 Math Sprint</h2>
+      <div class="score-display">
+        <span class="score-value" id="score">0</span>
+        <span>pts</span>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-container">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+    <div class="timer-label" style="display:flex;justify-content:space-between;">
+      <span id="difficulty-badge" class="difficulty-badge easy">Easy</span>
+      <span id="timer-label">90s</span>
+    </div>
+
+    <!-- Game Area -->
+    <div id="game-area" style="margin-top:1rem;">
+      <div class="math-problem" id="math-problem">?</div>
+      <div class="answer-grid" id="answer-grid">
+        <button class="answer-btn" data-idx="0"></button>
+        <button class="answer-btn" data-idx="1"></button>
+        <button class="answer-btn" data-idx="2"></button>
+        <button class="answer-btn" data-idx="3"></button>
+      </div>
+      <div class="text-center" style="margin-top:0.5rem;color:var(--text-muted);font-size:0.85rem;">
+        ✅ <span id="correct-count">0</span> correct
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/progress.js"></script>
+  <script>
+  (() => {
+    let score = 0;
+    let timeLeft = 90;
+    let timerInterval = null;
+    let correctStreak = 0;
+    let totalCorrect = 0;
+    let totalAnswered = 0;
+    let gameActive = false;
+    let correctAnswer = 0;
+    let answerLocked = false;
+
+    const TOTAL_TIME = 90;
+
+    const problemEl    = document.getElementById('math-problem');
+    const answerBtns   = Array.from(document.querySelectorAll('.answer-btn'));
+    const scoreEl      = document.getElementById('score');
+    const timerBar     = document.getElementById('timer-bar');
+    const timerLabel   = document.getElementById('timer-label');
+    const diffBadge    = document.getElementById('difficulty-badge');
+    const correctCount = document.getElementById('correct-count');
+    const resultOverlay = document.getElementById('result-overlay');
+    const resultScore  = document.getElementById('result-score');
+    const newBestBadge = document.getElementById('new-best-badge');
+    const resultDetail = document.getElementById('result-detail');
+    const btnPlayAgain = document.getElementById('btn-play-again');
+
+    function getDifficulty() {
+      if (correctStreak < 5) return 'easy';
+      if (correctStreak < 10) return 'medium';
+      return 'hard';
+    }
+
+    function generateProblem() {
+      const diff = getDifficulty();
+      let a, b, op, answer;
+
+      if (diff === 'easy') {
+        a = Math.floor(Math.random() * 9) + 1;
+        b = Math.floor(Math.random() * 9) + 1;
+        op = ['+', '-'][Math.floor(Math.random() * 2)];
+      } else if (diff === 'medium') {
+        a = Math.floor(Math.random() * 20) + 5;
+        b = Math.floor(Math.random() * 20) + 5;
+        op = ['+', '-', '×'][Math.floor(Math.random() * 3)];
+      } else {
+        a = Math.floor(Math.random() * 12) + 3;
+        b = Math.floor(Math.random() * 12) + 3;
+        op = ['×', '+', '-'][Math.floor(Math.random() * 3)];
+        if (op !== '×') {
+          a = Math.floor(Math.random() * 50) + 10;
+          b = Math.floor(Math.random() * 50) + 10;
+        }
+      }
+
+      if (op === '+')  answer = a + b;
+      else if (op === '-') { if (a < b) [a, b] = [b, a]; answer = a - b; }
+      else answer = a * b;
+
+      return { a, b, op, answer };
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function generateChoices(correct) {
+      const choices = new Set([correct]);
+      while (choices.size < 4) {
+        const delta = Math.floor(Math.random() * 10) + 1;
+        const wrong = correct + (Math.random() < 0.5 ? delta : -delta);
+        if (wrong !== correct) choices.add(wrong);
+      }
+      return shuffle([...choices]);
+    }
+
+    function updateDiffBadge() {
+      const diff = getDifficulty();
+      diffBadge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+      diffBadge.className = `difficulty-badge ${diff}`;
+    }
+
+    function loadQuestion() {
+      if (!gameActive) return;
+      answerLocked = false;
+      const { a, b, op, answer } = generateProblem();
+      correctAnswer = answer;
+      problemEl.textContent = `${a} ${op} ${b} = ?`;
+      const choices = generateChoices(answer);
+      answerBtns.forEach((btn, i) => {
+        btn.textContent = choices[i];
+        btn.className = 'answer-btn';
+        btn.disabled = false;
+      });
+      updateDiffBadge();
+    }
+
+    function addScore(pts) {
+      score = Math.max(0, score + pts);
+      scoreEl.textContent = score;
+    }
+
+    function handleAnswer(btn) {
+      if (!gameActive || answerLocked) return;
+      const chosen = parseInt(btn.textContent, 10);
+      totalAnswered++;
+
+      if (chosen === correctAnswer) {
+        answerLocked = true;
+        btn.classList.add('correct');
+        const diff = getDifficulty();
+        const pts = diff === 'easy' ? 50 : diff === 'medium' ? 100 : 150;
+        addScore(pts);
+        correctStreak++;
+        totalCorrect++;
+        correctCount.textContent = totalCorrect;
+        answerBtns.forEach(b => b.disabled = true);
+        setTimeout(loadQuestion, 400);
+      } else {
+        btn.classList.add('wrong');
+        btn.disabled = true;
+        addScore(-20);
+        correctStreak = 0;
+        // Problem stays; player can try remaining options
+      }
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      answerBtns.forEach(b => b.disabled = true);
+
+      const isNew = CBGProgress.saveScore('math-sprint', score);
+      resultScore.textContent = score;
+      newBestBadge.classList.toggle('hidden', !isNew);
+      const acc = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+      resultDetail.textContent = `✅ ${totalCorrect} correct · 🎯 ${acc}% accuracy`;
+      resultOverlay.classList.remove('hidden');
+    }
+
+    function startTimer() {
+      timerBar.style.width = '100%';
+      timerLabel.textContent = `${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const pct = (timeLeft / TOTAL_TIME) * 100;
+        timerBar.style.width = `${pct}%`;
+        timerLabel.textContent = `${timeLeft}s`;
+        if (timeLeft <= 15) timerBar.classList.add('danger');
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 90;
+      correctStreak = 0;
+      totalCorrect = 0;
+      totalAnswered = 0;
+      answerLocked = false;
+      scoreEl.textContent = '0';
+      correctCount.textContent = '0';
+      timerBar.classList.remove('danger');
+      resultOverlay.classList.add('hidden');
+      gameActive = true;
+      loadQuestion();
+      startTimer();
+    }
+
+    function runCountdown(cb) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numEl   = document.getElementById('countdown-num');
+      let n = 3;
+      numEl.textContent = n;
+      const tick = () => {
+        n--;
+        if (n <= 0) {
+          numEl.textContent = 'GO!';
+          setTimeout(() => { overlay.classList.add('hidden'); cb(); }, 600);
+          return;
+        }
+        numEl.textContent = n;
+        setTimeout(tick, 1000);
+      };
+      setTimeout(tick, 1000);
+    }
+
+    answerBtns.forEach(btn => btn.addEventListener('click', () => handleAnswer(btn)));
+    btnPlayAgain.addEventListener('click', () => { clearInterval(timerInterval); startGame(); });
+
+    runCountdown(startGame);
+  })();
+  </script>
+</body>
+</html>
