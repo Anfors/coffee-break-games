@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>☕ Coffee Break Games</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <h1>☕ Coffee Break Games</h1>
+    <p>Quick games for your break</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Stats -->
+    <div class="stats-panel">
+      <div class="stat-item">
+        <span class="stat-value" id="stat-total">0</span>
+        <span class="stat-label">Total Played</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="stat-today">0</span>
+        <span class="stat-label">Today</span>
+      </div>
+    </div>
+
+    <!-- Hero CTA -->
+    <div class="hero-cta">
+      <button id="btn-random" class="btn btn-random">🎲 Play Random Game</button>
+    </div>
+
+    <!-- Games Grid -->
+    <section class="games-section" style="margin-top:2rem;">
+      <h2>Choose a Game</h2>
+      <div class="games-grid">
+
+        <!-- Word Scramble -->
+        <div class="game-card">
+          <div class="game-card-header">
+            <span class="game-emoji">🔤</span>
+            <h3>Word Scramble</h3>
+          </div>
+          <p class="game-desc">Unscramble words against the clock. How many can you get?</p>
+          <div class="game-card-meta">
+            <span class="time-badge">~1 min</span>
+            <span class="high-score">Best: <span id="hs-word-scramble">0</span></span>
+          </div>
+          <a href="games/word-scramble.html" class="btn btn-primary">Play</a>
+        </div>
+
+        <!-- Math Sprint -->
+        <div class="game-card">
+          <div class="game-card-header">
+            <span class="game-emoji">🔢</span>
+            <h3>Math Sprint</h3>
+          </div>
+          <p class="game-desc">Rapid-fire mental math with escalating difficulty.</p>
+          <div class="game-card-meta">
+            <span class="time-badge">~1.5 min</span>
+            <span class="high-score">Best: <span id="hs-math-sprint">0</span></span>
+          </div>
+          <a href="games/math-sprint.html" class="btn btn-primary">Play</a>
+        </div>
+
+        <!-- Color Tap -->
+        <div class="game-card">
+          <div class="game-card-header">
+            <span class="game-emoji">🎨</span>
+            <h3>Color Tap</h3>
+          </div>
+          <p class="game-desc">Tap the color that matches the word — not the ink. Brain bender!</p>
+          <div class="game-card-meta">
+            <span class="time-badge">~1 min</span>
+            <span class="high-score">Best: <span id="hs-color-tap">0</span></span>
+          </div>
+          <a href="games/color-tap.html" class="btn btn-primary">Play</a>
+        </div>
+
+        <!-- Trivia -->
+        <div class="game-card">
+          <div class="game-card-header">
+            <span class="game-emoji">🧠</span>
+            <h3>Quick Trivia</h3>
+          </div>
+          <p class="game-desc">10 questions, 15 seconds each. Mixed topics. How smart are you?</p>
+          <div class="game-card-meta">
+            <span class="time-badge">~2 min</span>
+            <span class="high-score">Best: <span id="hs-trivia">0</span></span>
+          </div>
+          <a href="games/trivia.html" class="btn btn-primary">Play</a>
+        </div>
+
+        <!-- Memory -->
+        <div class="game-card">
+          <div class="game-card-header">
+            <span class="game-emoji">🃏</span>
+            <h3>Emoji Memory</h3>
+          </div>
+          <p class="game-desc">Match all emoji pairs. Fewer moves = higher score!</p>
+          <div class="game-card-meta">
+            <span class="time-badge">~2 min</span>
+            <span class="high-score">Best: <span id="hs-memory">0</span></span>
+          </div>
+          <a href="games/memory.html" class="btn btn-primary">Play</a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/progress.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

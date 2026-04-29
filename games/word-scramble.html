@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Scramble — Coffee Break Games</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-text">Get ready to unscramble!</div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div class="result-overlay hidden" id="result-overlay">
+    <h2>Round Over!</h2>
+    <div class="result-score" id="result-score">0</div>
+    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+    </div>
+  </div>
+
+  <div class="game-page">
+    <div class="game-header">
+      <a href="../index.html" class="btn btn-back">← Back</a>
+      <h2>🔤 Word Scramble</h2>
+      <div class="score-display">
+        <span class="score-value" id="score">0</span>
+        <span>pts</span>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-container">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+    <div class="timer-label" id="timer-label">60s</div>
+
+    <!-- Game Area -->
+    <div id="game-area">
+      <div class="scramble-word" id="scramble-word">??????</div>
+      <div class="word-length-hint" id="word-hint"></div>
+
+      <div class="word-input-row" style="margin-top:1rem;">
+        <input
+          type="text"
+          id="word-input"
+          class="word-input"
+          placeholder="Type your answer…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          disabled
+        />
+        <button class="btn btn-primary" id="btn-submit" disabled>Submit</button>
+      </div>
+
+      <div class="skip-row">
+        <button class="btn btn-secondary" id="btn-skip" style="font-size:0.85rem;padding:0.4rem 1rem;" disabled>
+          Skip (−10 pts)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/progress.js"></script>
+  <script>
+  (() => {
+    const WORDS = [
+      'BASKET','PURPLE','GARDEN','BRIDGE','CASTLE','DRAGON','FLIGHT','GENTLE',
+      'HAMMER','ISLAND','JUNGLE','KITTEN','LADDER','MIRROR','NAPKIN','ORIGIN',
+      'PLANET','QUARTZ','RABBIT','SILVER','TIMBER','UNIQUE','VELVET','WINDOW',
+      'YELLOW','ZIPPER','ANCHOR','BUTTER','CANDLE','DONKEY','ESCAPE','FABRIC',
+      'GRAVEL','HELMET','IMPACT','JEWEL','KETTLE','LEMON','MARBLE','NEEDLE'
+    ];
+
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval = null;
+    let currentWord = '';
+    let wordsCorrect = 0;
+    let wordsSkipped = 0;
+    let gameActive = false;
+    let usedWords = new Set();
+
+    const scrambleEl    = document.getElementById('scramble-word');
+    const hintEl        = document.getElementById('word-hint');
+    const inputEl       = document.getElementById('word-input');
+    const btnSubmit     = document.getElementById('btn-submit');
+    const btnSkip       = document.getElementById('btn-skip');
+    const scoreEl       = document.getElementById('score');
+    const timerBar      = document.getElementById('timer-bar');
+    const timerLabel    = document.getElementById('timer-label');
+    const resultOverlay = document.getElementById('result-overlay');
+    const resultScore   = document.getElementById('result-score');
+    const newBestBadge  = document.getElementById('new-best-badge');
+    const resultDetail  = document.getElementById('result-detail');
+    const btnPlayAgain  = document.getElementById('btn-play-again');
+
+    function scramble(word) {
+      let arr = word.split('');
+      let tries = 0;
+      do {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        tries++;
+      } while (arr.join('') === word && tries < 20);
+      return arr.join('');
+    }
+
+    function pickWord() {
+      const available = WORDS.filter(w => !usedWords.has(w));
+      if (available.length === 0) { usedWords.clear(); return pickWord(); }
+      const w = available[Math.floor(Math.random() * available.length)];
+      usedWords.add(w);
+      return w;
+    }
+
+    function loadWord() {
+      currentWord = pickWord();
+      const sc = scramble(currentWord);
+      scrambleEl.textContent = sc;
+      hintEl.textContent = `${currentWord.length} letters`;
+      inputEl.value = '';
+      inputEl.disabled = false;
+      btnSubmit.disabled = false;
+      btnSkip.disabled = false;
+      inputEl.focus();
+      inputEl.classList.remove('correct-flash');
+      scrambleEl.classList.remove('shake');
+    }
+
+    function addScore(pts) {
+      score = Math.max(0, score + pts);
+      scoreEl.textContent = score;
+    }
+
+    function handleSubmit() {
+      if (!gameActive) return;
+      const guess = inputEl.value.trim().toUpperCase();
+      if (!guess) return;
+
+      if (guess === currentWord) {
+        const bonus = Math.floor(currentWord.length * 20);
+        addScore(100 + bonus);
+        wordsCorrect++;
+        inputEl.classList.add('correct-flash');
+        setTimeout(loadWord, 300);
+      } else {
+        addScore(-10);
+        scrambleEl.classList.remove('shake');
+        void scrambleEl.offsetWidth; // reflow to restart animation
+        scrambleEl.classList.add('shake');
+        inputEl.value = '';
+        inputEl.focus();
+      }
+    }
+
+    function handleSkip() {
+      if (!gameActive) return;
+      addScore(-10);
+      wordsSkipped++;
+      loadWord();
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      inputEl.disabled = true;
+      btnSubmit.disabled = true;
+      btnSkip.disabled = true;
+
+      const isNew = CBGProgress.saveScore('word-scramble', score);
+      resultScore.textContent = score;
+      newBestBadge.classList.toggle('hidden', !isNew);
+      resultDetail.textContent = `✅ ${wordsCorrect} correct · ⏭ ${wordsSkipped} skipped`;
+      resultOverlay.classList.remove('hidden');
+    }
+
+    function startTimer() {
+      timerBar.style.width = '100%';
+      timerLabel.textContent = `${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const pct = (timeLeft / 60) * 100;
+        timerBar.style.width = `${pct}%`;
+        timerLabel.textContent = `${timeLeft}s`;
+        if (timeLeft <= 10) timerBar.classList.add('danger');
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 60;
+      wordsCorrect = 0;
+      wordsSkipped = 0;
+      usedWords.clear();
+      scoreEl.textContent = '0';
+      timerBar.classList.remove('danger');
+      resultOverlay.classList.add('hidden');
+      gameActive = true;
+      loadWord();
+      startTimer();
+    }
+
+    function runCountdown(cb) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numEl   = document.getElementById('countdown-num');
+      let n = 3;
+      numEl.textContent = n;
+      const tick = () => {
+        n--;
+        if (n <= 0) {
+          numEl.textContent = 'GO!';
+          setTimeout(() => { overlay.classList.add('hidden'); cb(); }, 600);
+          return;
+        }
+        numEl.textContent = n;
+        // re-trigger animation
+        numEl.classList.remove('countPop');
+        void numEl.offsetWidth;
+        setTimeout(tick, 1000);
+      };
+      setTimeout(tick, 1000);
+    }
+
+    // Wire events
+    btnSubmit.addEventListener('click', handleSubmit);
+    btnSkip.addEventListener('click', handleSkip);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+    btnPlayAgain.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      startGame();
+    });
+
+    // Kick off
+    runCountdown(startGame);
+  })();
+  </script>
+</body>
+</html>

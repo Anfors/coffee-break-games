@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Trivia — Coffee Break Games</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-text">10 questions — go!</div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div class="result-overlay hidden" id="result-overlay">
+    <h2>Quiz Complete!</h2>
+    <div class="result-score" id="result-score">0</div>
+    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+    </div>
+  </div>
+
+  <div class="game-page">
+    <div class="game-header">
+      <a href="../index.html" class="btn btn-back">← Back</a>
+      <h2>🧠 Quick Trivia</h2>
+      <div class="score-display">
+        <span class="score-value" id="score">0</span>
+        <span>pts</span>
+      </div>
+    </div>
+
+    <!-- Per-question timer -->
+    <div class="timer-container">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+    <div class="timer-label" style="display:flex;justify-content:space-between;">
+      <span class="question-counter" id="question-counter" style="font-size:0.85rem;color:var(--text-muted);">Q 1 / 10</span>
+      <span id="timer-label">15s</span>
+    </div>
+
+    <!-- Game Area -->
+    <div id="game-area">
+      <div class="question-text" id="question-text">Loading…</div>
+      <div class="answer-grid" id="answer-grid">
+        <button class="answer-btn" data-idx="0"></button>
+        <button class="answer-btn" data-idx="1"></button>
+        <button class="answer-btn" data-idx="2"></button>
+        <button class="answer-btn" data-idx="3"></button>
+      </div>
+      <div class="trivia-streak" style="margin-top:0.5rem;">
+        🔥 Streak: <span id="streak">0</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/progress.js"></script>
+  <script>
+  (() => {
+    const ALL_QUESTIONS = [
+      { q: "What is the capital of France?",           a: "Paris",           w: ["London","Berlin","Madrid"] },
+      { q: "How many sides does a hexagon have?",      a: "6",               w: ["5","7","8"] },
+      { q: "Which planet is known as the Red Planet?", a: "Mars",            w: ["Venus","Jupiter","Saturn"] },
+      { q: "What is H₂O commonly known as?",           a: "Water",           w: ["Hydrogen","Oxygen","Salt"] },
+      { q: "Who painted the Mona Lisa?",               a: "Leonardo da Vinci",w: ["Michelangelo","Raphael","Caravaggio"] },
+      { q: "How many continents are there on Earth?",  a: "7",               w: ["5","6","8"] },
+      { q: "What is the largest ocean?",               a: "Pacific",         w: ["Atlantic","Indian","Arctic"] },
+      { q: "What is the chemical symbol for gold?",    a: "Au",              w: ["Ag","Fe","Go"] },
+      { q: "Which country invented pizza?",            a: "Italy",           w: ["Greece","USA","Spain"] },
+      { q: "How many bones are in the human body?",    a: "206",             w: ["189","215","230"] },
+      { q: "Which planet is closest to the Sun?",      a: "Mercury",         w: ["Venus","Earth","Mars"] },
+      { q: "What is the speed of light (approx)?",     a: "300,000 km/s",    w: ["150,000 km/s","600,000 km/s","30,000 km/s"] },
+      { q: "Who wrote 'Romeo and Juliet'?",            a: "Shakespeare",     w: ["Dickens","Chaucer","Marlowe"] },
+      { q: "What is the smallest country in the world?", a: "Vatican City",  w: ["Monaco","San Marino","Liechtenstein"] },
+      { q: "How many strings does a standard guitar have?", a: "6",          w: ["4","7","8"] },
+      { q: "Which element has the symbol 'O'?",        a: "Oxygen",          w: ["Osmium","Oganesson","Olympium"] },
+      { q: "What is the capital of Japan?",            a: "Tokyo",           w: ["Kyoto","Osaka","Hiroshima"] },
+      { q: "In which year did World War II end?",      a: "1945",            w: ["1943","1944","1946"] },
+      { q: "How many players are on a soccer team?",   a: "11",              w: ["9","10","12"] },
+      { q: "What is the tallest mountain in the world?", a: "Mount Everest", w: ["K2","Kangchenjunga","Lhotse"] },
+      { q: "Which animal is known as the 'King of the Jungle'?", a: "Lion",  w: ["Tiger","Leopard","Cheetah"] },
+      { q: "What is the main ingredient in bread?",   a: "Flour",            w: ["Sugar","Yeast","Butter"] },
+      { q: "How many days are in a leap year?",        a: "366",             w: ["364","365","367"] },
+      { q: "Which gas do plants absorb from the air?", a: "Carbon dioxide",  w: ["Oxygen","Nitrogen","Helium"] },
+      { q: "Who was the first person to walk on the moon?", a: "Neil Armstrong", w: ["Buzz Aldrin","Yuri Gagarin","John Glenn"] },
+      { q: "What is the largest mammal on Earth?",     a: "Blue whale",      w: ["Elephant","Giraffe","Hippo"] },
+      { q: "How many colors are in a rainbow?",        a: "7",               w: ["5","6","8"] },
+      { q: "Which country is home to the kangaroo?",   a: "Australia",       w: ["New Zealand","South Africa","Brazil"] },
+      { q: "What is the hardest natural substance?",   a: "Diamond",         w: ["Quartz","Sapphire","Topaz"] },
+      { q: "What language do Brazilians primarily speak?", a: "Portuguese",  w: ["Spanish","English","French"] },
+      { q: "How many seconds are in one minute?",      a: "60",              w: ["50","100","30"] },
+      { q: "What planet has rings around it?",         a: "Saturn",          w: ["Jupiter","Uranus","Neptune"] },
+      { q: "What is the currency of Japan?",           a: "Yen",             w: ["Won","Yuan","Rupee"] },
+      { q: "Who developed the theory of relativity?",  a: "Einstein",        w: ["Newton","Hawking","Bohr"] },
+      { q: "What is the longest river in the world?",  a: "Nile",            w: ["Amazon","Yangtze","Mississippi"] },
+      { q: "Which organ pumps blood around the body?", a: "Heart",           w: ["Liver","Lung","Kidney"] },
+      { q: "What does 'WWW' stand for?",               a: "World Wide Web",  w: ["World Wire Web","Wide World Web","Worldwide Website"] },
+      { q: "How many teeth does a healthy adult human have?", a: "32",       w: ["28","30","36"] },
+      { q: "What is the national language of Mexico?", a: "Spanish",         w: ["Mexican","Portuguese","English"] },
+      { q: "Which fruit is known as the 'King of Fruits'?", a: "Durian",     w: ["Mango","Pineapple","Jackfruit"] },
+      { q: "How many planets are in our solar system?", a: "8",              w: ["7","9","10"] },
+      { q: "What shape has 3 sides?",                  a: "Triangle",        w: ["Square","Pentagon","Hexagon"] },
+      { q: "Who invented the telephone?",              a: "Alexander Graham Bell", w: ["Edison","Tesla","Marconi"] },
+      { q: "Which country has the most natural lakes?", a: "Canada",         w: ["Russia","USA","Brazil"] },
+    ];
+
+    const QUESTIONS_PER_ROUND = 10;
+    const TIME_PER_Q = 15;
+
+    let score = 0;
+    let streak = 0;
+    let currentQ = 0;
+    let timeLeft = TIME_PER_Q;
+    let timerInterval = null;
+    let gameActive = false;
+    let questionPool = [];
+    let correctAnswer = '';
+    let answerLocked = false;
+    let totalCorrect = 0;
+    let questionStartTime = 0;
+
+    const questionText = document.getElementById('question-text');
+    const answerBtns   = Array.from(document.querySelectorAll('.answer-btn'));
+    const scoreEl      = document.getElementById('score');
+    const timerBar     = document.getElementById('timer-bar');
+    const timerLabel   = document.getElementById('timer-label');
+    const qCounter     = document.getElementById('question-counter');
+    const streakEl     = document.getElementById('streak');
+    const resultOverlay= document.getElementById('result-overlay');
+    const resultScore  = document.getElementById('result-score');
+    const newBestBadge = document.getElementById('new-best-badge');
+    const resultDetail = document.getElementById('result-detail');
+    const btnPlayAgain = document.getElementById('btn-play-again');
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildPool() {
+      return shuffle([...ALL_QUESTIONS]).slice(0, QUESTIONS_PER_ROUND);
+    }
+
+    function loadQuestion() {
+      if (currentQ >= QUESTIONS_PER_ROUND) { endGame(); return; }
+      clearInterval(timerInterval);
+
+      answerLocked = false;
+      timeLeft = TIME_PER_Q;
+      timerBar.classList.remove('danger');
+
+      const q = questionPool[currentQ];
+      correctAnswer = q.a;
+      qCounter.textContent = `Q ${currentQ + 1} / ${QUESTIONS_PER_ROUND}`;
+      questionText.textContent = q.q;
+
+      const options = shuffle([q.a, ...q.w]);
+      answerBtns.forEach((btn, i) => {
+        btn.textContent = options[i];
+        btn.className = 'answer-btn';
+        btn.disabled = false;
+      });
+
+      timerBar.style.transition = 'none';
+      timerBar.style.width = '100%';
+      // small rAF trick to let browser repaint before adding transition
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          timerBar.style.transition = 'width 1s linear';
+          startQuestionTimer();
+        });
+      });
+
+      questionStartTime = Date.now();
+    }
+
+    function addScore(pts) {
+      score = Math.max(0, score + pts);
+      scoreEl.textContent = score;
+    }
+
+    function handleAnswer(btn) {
+      if (!gameActive || answerLocked) return;
+      answerLocked = true;
+      clearInterval(timerInterval);
+
+      const chosen = btn.textContent;
+      if (chosen === correctAnswer) {
+        btn.classList.add('correct');
+        const elapsed = (Date.now() - questionStartTime) / 1000;
+        const speedBonus = Math.round(Math.max(0, 50 - (elapsed / TIME_PER_Q) * 50));
+        addScore(100 + speedBonus);
+        streak++;
+        totalCorrect++;
+        streakEl.textContent = streak;
+        answerBtns.forEach(b => b.disabled = true);
+        currentQ++;
+        setTimeout(loadQuestion, 600);
+      } else {
+        btn.classList.add('wrong');
+        btn.disabled = true;
+        streak = 0;
+        streakEl.textContent = 0;
+        // Show correct answer
+        answerBtns.forEach(b => {
+          if (b.textContent === correctAnswer) b.classList.add('correct');
+        });
+        answerBtns.forEach(b => b.disabled = true);
+        currentQ++;
+        setTimeout(loadQuestion, 1500);
+      }
+    }
+
+    function startQuestionTimer() {
+      timerLabel.textContent = `${timeLeft}s`;
+      timerBar.style.width = '100%';
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const pct = (timeLeft / TIME_PER_Q) * 100;
+        timerBar.style.width = `${pct}%`;
+        timerLabel.textContent = `${timeLeft}s`;
+        if (timeLeft <= 5) timerBar.classList.add('danger');
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          if (answerLocked) return;
+          answerLocked = true;
+          // Time out — show correct, move on
+          answerBtns.forEach(b => {
+            if (b.textContent === correctAnswer) b.classList.add('correct');
+            b.disabled = true;
+          });
+          streak = 0;
+          streakEl.textContent = 0;
+          currentQ++;
+          setTimeout(loadQuestion, 1500);
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      const isNew = CBGProgress.saveScore('trivia', score);
+      resultScore.textContent = score;
+      newBestBadge.classList.toggle('hidden', !isNew);
+      resultDetail.textContent = `✅ ${totalCorrect} / ${QUESTIONS_PER_ROUND} correct`;
+      resultOverlay.classList.remove('hidden');
+    }
+
+    function startGame() {
+      score = 0;
+      streak = 0;
+      currentQ = 0;
+      totalCorrect = 0;
+      answerLocked = false;
+      scoreEl.textContent = '0';
+      streakEl.textContent = '0';
+      resultOverlay.classList.add('hidden');
+      questionPool = buildPool();
+      gameActive = true;
+      loadQuestion();
+    }
+
+    function runCountdown(cb) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numEl   = document.getElementById('countdown-num');
+      let n = 3;
+      numEl.textContent = n;
+      const tick = () => {
+        n--;
+        if (n <= 0) {
+          numEl.textContent = 'GO!';
+          setTimeout(() => { overlay.classList.add('hidden'); cb(); }, 600);
+          return;
+        }
+        numEl.textContent = n;
+        setTimeout(tick, 1000);
+      };
+      setTimeout(tick, 1000);
+    }
+
+    answerBtns.forEach(btn => btn.addEventListener('click', () => handleAnswer(btn)));
+    btnPlayAgain.addEventListener('click', () => { clearInterval(timerInterval); startGame(); });
+
+    runCountdown(startGame);
+  })();
+  </script>
+</body>
+</html>

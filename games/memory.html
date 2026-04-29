@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emoji Memory — Coffee Break Games</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdown-overlay">
+    <div class="countdown-number" id="countdown-num">3</div>
+    <div class="countdown-text">Memorize those emojis!</div>
+  </div>
+
+  <!-- Result Overlay -->
+  <div class="result-overlay hidden" id="result-overlay">
+    <h2>All Matched! 🎉</h2>
+    <div class="result-score" id="result-score">0</div>
+    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+    </div>
+  </div>
+
+  <div class="game-page">
+    <div class="game-header">
+      <a href="../index.html" class="btn btn-back">← Back</a>
+      <h2>🃏 Emoji Memory</h2>
+      <div class="score-display">
+        <span class="score-value" id="score-preview">—</span>
+        <span>pts</span>
+      </div>
+    </div>
+
+    <div class="memory-info">
+      <div class="memory-stat">
+        <strong id="moves-count">0</strong>
+        Moves
+      </div>
+      <div class="memory-stat">
+        <strong id="timer-display">0:00</strong>
+        Time
+      </div>
+      <div class="memory-stat">
+        <strong id="pairs-found">0</strong>
+        / 8 Pairs
+      </div>
+    </div>
+
+    <div class="memory-grid" id="memory-grid"></div>
+
+    <p style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
+      Score = 1000 − (moves × 10) − (seconds × 2), min 100
+    </p>
+  </div>
+
+  <script src="../js/progress.js"></script>
+  <script>
+  (() => {
+    const EMOJIS = ['🎮','🎯','🎪','🎨','🎭','🎬','🎤','🎸','🎹','🎺','🎻','🥁'];
+
+    let moves = 0;
+    let pairsFound = 0;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let gameActive = false;
+
+    const grid       = document.getElementById('memory-grid');
+    const movesEl    = document.getElementById('moves-count');
+    const timerEl    = document.getElementById('timer-display');
+    const pairsEl    = document.getElementById('pairs-found');
+    const scoreEl    = document.getElementById('score-preview');
+    const resultOverlay = document.getElementById('result-overlay');
+    const resultScore= document.getElementById('result-score');
+    const newBestBadge= document.getElementById('new-best-badge');
+    const resultDetail= document.getElementById('result-detail');
+    const btnPlayAgain= document.getElementById('btn-play-again');
+
+    function calcScore() {
+      return Math.max(100, 1000 - (moves * 10) - (timerSeconds * 2));
+    }
+
+    function updateScorePreview() {
+      scoreEl.textContent = calcScore();
+    }
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        timerEl.textContent = formatTime(timerSeconds);
+        updateScorePreview();
+      }, 1000);
+    }
+
+    function buildGrid() {
+      grid.innerHTML = '';
+      const chosen = EMOJIS.slice().sort(() => Math.random() - 0.5).slice(0, 8);
+      const pairs = [...chosen, ...chosen].sort(() => Math.random() - 0.5);
+
+      pairs.forEach((emoji, i) => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.emoji = emoji;
+        card.dataset.index = i;
+        card.innerHTML = `
+          <div class="card-back">☕</div>
+          <div class="card-front">${emoji}</div>
+        `;
+        card.addEventListener('click', () => flipCard(card));
+        grid.appendChild(card);
+      });
+    }
+
+    function flipCard(card) {
+      if (!gameActive || lockBoard) return;
+      if (card === firstCard) return;
+      if (card.classList.contains('matched') || card.classList.contains('flipped')) return;
+
+      card.classList.add('flipped');
+
+      if (!firstCard) {
+        firstCard = card;
+        return;
+      }
+
+      secondCard = card;
+      lockBoard = true;
+      moves++;
+      movesEl.textContent = moves;
+      updateScorePreview();
+      checkMatch();
+    }
+
+    function checkMatch() {
+      const match = firstCard.dataset.emoji === secondCard.dataset.emoji;
+      if (match) {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        pairsFound++;
+        pairsEl.textContent = pairsFound;
+        resetSelection();
+        if (pairsFound === 8) endGame();
+      } else {
+        setTimeout(() => {
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          resetSelection();
+        }, 900);
+      }
+    }
+
+    function resetSelection() {
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      const finalScore = calcScore();
+      const isNew = CBGProgress.saveScore('memory', finalScore);
+      resultScore.textContent = finalScore;
+      newBestBadge.classList.toggle('hidden', !isNew);
+      resultDetail.textContent = `🃏 ${moves} moves · ⏱ ${formatTime(timerSeconds)}`;
+      resultOverlay.classList.remove('hidden');
+    }
+
+    function startGame() {
+      moves = 0;
+      pairsFound = 0;
+      timerSeconds = 0;
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+      movesEl.textContent = '0';
+      timerEl.textContent = '0:00';
+      pairsEl.textContent = '0';
+      scoreEl.textContent = '—';
+      clearInterval(timerInterval);
+      resultOverlay.classList.add('hidden');
+      buildGrid();
+      gameActive = true;
+      startTimer();
+      updateScorePreview();
+    }
+
+    function runCountdown(cb) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numEl   = document.getElementById('countdown-num');
+      let n = 3;
+      numEl.textContent = n;
+      const tick = () => {
+        n--;
+        if (n <= 0) {
+          numEl.textContent = 'GO!';
+          setTimeout(() => { overlay.classList.add('hidden'); cb(); }, 600);
+          return;
+        }
+        numEl.textContent = n;
+        setTimeout(tick, 1000);
+      };
+      setTimeout(tick, 1000);
+    }
+
+    btnPlayAgain.addEventListener('click', startGame);
+
+    runCountdown(startGame);
+  })();
+  </script>
+</body>
+</html>
