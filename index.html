@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>☕ Coffee Break Games</title>
   <link rel="stylesheet" href="css/style.css" />
+  <script src="js/i18n.js"></script>
 </head>
 <body>
 
   <header class="site-header">
     <h1>☕ Coffee Break Games</h1>
-    <p>Quick games for your break</p>
+    <p data-i18n="site.subtitle">Quick games for your break</p>
   </header>
 
   <main class="container">
@@ -19,92 +20,92 @@
     <div class="stats-panel">
       <div class="stat-item">
         <span class="stat-value" id="stat-total">0</span>
-        <span class="stat-label">Total Played</span>
+        <span class="stat-label" data-i18n="stats.total">Total Played</span>
       </div>
       <div class="stat-item">
         <span class="stat-value" id="stat-today">0</span>
-        <span class="stat-label">Today</span>
+        <span class="stat-label" data-i18n="stats.today">Today</span>
       </div>
     </div>
 
     <!-- Hero CTA -->
     <div class="hero-cta">
-      <button id="btn-random" class="btn btn-random">🎲 Play Random Game</button>
+      <button id="btn-random" class="btn btn-random" data-i18n="btn.random">🎲 Play Random Game</button>
     </div>
 
     <!-- Games Grid -->
     <section class="games-section" style="margin-top:2rem;">
-      <h2>Choose a Game</h2>
+      <h2 data-i18n="hub.choose">Choose a Game</h2>
       <div class="games-grid">
 
         <!-- Word Scramble -->
         <div class="game-card">
           <div class="game-card-header">
             <span class="game-emoji">🔤</span>
-            <h3>Word Scramble</h3>
+            <h3 data-i18n="word-scramble.card.title">Word Scramble</h3>
           </div>
-          <p class="game-desc">Unscramble words against the clock. How many can you get?</p>
+          <p class="game-desc" data-i18n="word-scramble.card.desc">Unscramble words against the clock. How many can you get?</p>
           <div class="game-card-meta">
-            <span class="time-badge">~1 min</span>
-            <span class="high-score">Best: <span id="hs-word-scramble">0</span></span>
+            <span class="time-badge" data-i18n="time.1min">~1 min</span>
+            <span class="high-score"><span data-i18n="best">Best:</span> <span id="hs-word-scramble">0</span></span>
           </div>
-          <a href="games/word-scramble.html" class="btn btn-primary">Play</a>
+          <a href="games/word-scramble.html" class="btn btn-primary" data-i18n="btn.play">Play</a>
         </div>
 
         <!-- Math Sprint -->
         <div class="game-card">
           <div class="game-card-header">
             <span class="game-emoji">🔢</span>
-            <h3>Math Sprint</h3>
+            <h3 data-i18n="math-sprint.card.title">Math Sprint</h3>
           </div>
-          <p class="game-desc">Rapid-fire mental math with escalating difficulty.</p>
+          <p class="game-desc" data-i18n="math-sprint.card.desc">Rapid-fire mental math with escalating difficulty.</p>
           <div class="game-card-meta">
-            <span class="time-badge">~1.5 min</span>
-            <span class="high-score">Best: <span id="hs-math-sprint">0</span></span>
+            <span class="time-badge" data-i18n="time.1.5min">~1.5 min</span>
+            <span class="high-score"><span data-i18n="best">Best:</span> <span id="hs-math-sprint">0</span></span>
           </div>
-          <a href="games/math-sprint.html" class="btn btn-primary">Play</a>
+          <a href="games/math-sprint.html" class="btn btn-primary" data-i18n="btn.play">Play</a>
         </div>
 
         <!-- Color Tap -->
         <div class="game-card">
           <div class="game-card-header">
             <span class="game-emoji">🎨</span>
-            <h3>Color Tap</h3>
+            <h3 data-i18n="color-tap.card.title">Color Tap</h3>
           </div>
-          <p class="game-desc">Tap the color that matches the word — not the ink. Brain bender!</p>
+          <p class="game-desc" data-i18n="color-tap.card.desc">Tap the color that matches the word — not the ink. Brain bender!</p>
           <div class="game-card-meta">
-            <span class="time-badge">~1 min</span>
-            <span class="high-score">Best: <span id="hs-color-tap">0</span></span>
+            <span class="time-badge" data-i18n="time.1min">~1 min</span>
+            <span class="high-score"><span data-i18n="best">Best:</span> <span id="hs-color-tap">0</span></span>
           </div>
-          <a href="games/color-tap.html" class="btn btn-primary">Play</a>
+          <a href="games/color-tap.html" class="btn btn-primary" data-i18n="btn.play">Play</a>
         </div>
 
         <!-- Trivia -->
         <div class="game-card">
           <div class="game-card-header">
             <span class="game-emoji">🧠</span>
-            <h3>Quick Trivia</h3>
+            <h3 data-i18n="trivia.card.title">Quick Trivia</h3>
           </div>
-          <p class="game-desc">10 questions, 15 seconds each. Mixed topics. How smart are you?</p>
+          <p class="game-desc" data-i18n="trivia.card.desc">10 questions, 15 seconds each. Mixed topics. How smart are you?</p>
           <div class="game-card-meta">
-            <span class="time-badge">~2 min</span>
-            <span class="high-score">Best: <span id="hs-trivia">0</span></span>
+            <span class="time-badge" data-i18n="time.2min">~2 min</span>
+            <span class="high-score"><span data-i18n="best">Best:</span> <span id="hs-trivia">0</span></span>
           </div>
-          <a href="games/trivia.html" class="btn btn-primary">Play</a>
+          <a href="games/trivia.html" class="btn btn-primary" data-i18n="btn.play">Play</a>
         </div>
 
         <!-- Memory -->
         <div class="game-card">
           <div class="game-card-header">
             <span class="game-emoji">🃏</span>
-            <h3>Emoji Memory</h3>
+            <h3 data-i18n="memory.card.title">Emoji Memory</h3>
           </div>
-          <p class="game-desc">Match all emoji pairs. Fewer moves = higher score!</p>
+          <p class="game-desc" data-i18n="memory.card.desc">Match all emoji pairs. Fewer moves = higher score!</p>
           <div class="game-card-meta">
-            <span class="time-badge">~2 min</span>
-            <span class="high-score">Best: <span id="hs-memory">0</span></span>
+            <span class="time-badge" data-i18n="time.2min">~2 min</span>
+            <span class="high-score"><span data-i18n="best">Best:</span> <span id="hs-memory">0</span></span>
           </div>
-          <a href="games/memory.html" class="btn btn-primary">Play</a>
+          <a href="games/memory.html" class="btn btn-primary" data-i18n="btn.play">Play</a>
         </div>
 
       </div>

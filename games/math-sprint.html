@@ -5,34 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Math Sprint — Coffee Break Games</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/i18n.js"></script>
 </head>
 <body>
 
   <!-- Countdown Overlay -->
   <div class="countdown-overlay" id="countdown-overlay">
     <div class="countdown-number" id="countdown-num">3</div>
-    <div class="countdown-text">Warm up your brain!</div>
+    <div class="countdown-text" data-i18n="math-sprint.countdown">Warm up your brain!</div>
   </div>
 
   <!-- Result Overlay -->
   <div class="result-overlay hidden" id="result-overlay">
-    <h2>Time's Up!</h2>
+    <h2 data-i18n="math-sprint.result-title">Time's Up!</h2>
     <div class="result-score" id="result-score">0</div>
-    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div id="new-best-badge" class="new-best hidden" data-i18n="new-best">🏆 New Best!</div>
     <div class="result-detail" id="result-detail"></div>
     <div class="result-actions">
-      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
-      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+      <button class="btn btn-primary" id="btn-play-again" data-i18n="btn.play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary" data-i18n="btn.back-hub">← Back to Hub</a>
     </div>
   </div>
 
   <div class="game-page">
     <div class="game-header">
-      <a href="../index.html" class="btn btn-back">← Back</a>
-      <h2>🔢 Math Sprint</h2>
+      <a href="../index.html" class="btn btn-back" data-i18n="btn.back">← Back</a>
+      <h2>🔢 <span data-i18n="math-sprint.card.title">Math Sprint</span></h2>
       <div class="score-display">
         <span class="score-value" id="score">0</span>
-        <span>pts</span>
+        <span data-i18n="pts">pts</span>
       </div>
     </div>
 
@@ -41,7 +42,7 @@
       <div class="timer-bar" id="timer-bar"></div>
     </div>
     <div class="timer-label" style="display:flex;justify-content:space-between;">
-      <span id="difficulty-badge" class="difficulty-badge easy">Easy</span>
+      <span id="difficulty-badge" class="difficulty-badge easy"></span>
       <span id="timer-label">90s</span>
     </div>
 
@@ -55,7 +56,7 @@
         <button class="answer-btn" data-idx="3"></button>
       </div>
       <div class="text-center" style="margin-top:0.5rem;color:var(--text-muted);font-size:0.85rem;">
-        ✅ <span id="correct-count">0</span> correct
+        ✅ <span id="correct-count">0</span> <span data-i18n="math-sprint.correct">correct</span>
       </div>
     </div>
   </div>
@@ -143,7 +144,7 @@
 
     function updateDiffBadge() {
       const diff = getDifficulty();
-      diffBadge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+      diffBadge.textContent = I18n.t(`math-sprint.difficulty.${diff}`);
       diffBadge.className = `difficulty-badge ${diff}`;
     }
 
@@ -201,7 +202,7 @@
       resultScore.textContent = score;
       newBestBadge.classList.toggle('hidden', !isNew);
       const acc = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
-      resultDetail.textContent = `✅ ${totalCorrect} correct · 🎯 ${acc}% accuracy`;
+      resultDetail.textContent = `✅ ${totalCorrect} ${I18n.t('result.correct')} · 🎯 ${acc}% ${I18n.t('result.accuracy')}`;
       resultOverlay.classList.remove('hidden');
     }
 
