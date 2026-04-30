@@ -75,14 +75,14 @@
     };
     const COLOR_NAMES = Object.keys(COLORS);
 
-    // Display names per language (key → translated uppercase label)
-    const COLOR_DISPLAY = {
+    // Localized display labels per language (internal key → translated uppercase label)
+    const COLOR_LABELS = {
       en: { red: 'RED', blue: 'BLUE', green: 'GREEN', yellow: 'YELLOW', purple: 'PURPLE', orange: 'ORANGE' },
       sv: { red: 'RÖD', blue: 'BLÅ', green: 'GRÖN', yellow: 'GUL', purple: 'LILA', orange: 'ORANGE' },
     };
 
     const lang = I18n.getLang();
-    const displayNames = COLOR_DISPLAY[lang] || COLOR_DISPLAY.en;
+    const displayNames = COLOR_LABELS[lang] || COLOR_LABELS.en;
 
     let score = 0;
     let streak = 0;

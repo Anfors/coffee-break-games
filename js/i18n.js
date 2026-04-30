@@ -160,9 +160,13 @@
 
   function t(key) {
     const lang = getLang();
-    return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined)
-      ? TRANSLATIONS[lang][key]
-      : (TRANSLATIONS[DEFAULT_LANG][key] !== undefined ? TRANSLATIONS[DEFAULT_LANG][key] : key);
+    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) {
+      return TRANSLATIONS[lang][key];
+    }
+    if (TRANSLATIONS[DEFAULT_LANG][key] !== undefined) {
+      return TRANSLATIONS[DEFAULT_LANG][key];
+    }
+    return key;
   }
 
   function applyTranslations() {
