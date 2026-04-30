@@ -5,34 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quick Trivia — Coffee Break Games</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/i18n.js"></script>
 </head>
 <body>
 
   <!-- Countdown Overlay -->
   <div class="countdown-overlay" id="countdown-overlay">
     <div class="countdown-number" id="countdown-num">3</div>
-    <div class="countdown-text">10 questions — go!</div>
+    <div class="countdown-text" data-i18n="trivia.countdown">10 questions — go!</div>
   </div>
 
   <!-- Result Overlay -->
   <div class="result-overlay hidden" id="result-overlay">
-    <h2>Quiz Complete!</h2>
+    <h2 data-i18n="trivia.result-title">Quiz Complete!</h2>
     <div class="result-score" id="result-score">0</div>
-    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div id="new-best-badge" class="new-best hidden" data-i18n="new-best">🏆 New Best!</div>
     <div class="result-detail" id="result-detail"></div>
     <div class="result-actions">
-      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
-      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+      <button class="btn btn-primary" id="btn-play-again" data-i18n="btn.play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary" data-i18n="btn.back-hub">← Back to Hub</a>
     </div>
   </div>
 
   <div class="game-page">
     <div class="game-header">
-      <a href="../index.html" class="btn btn-back">← Back</a>
-      <h2>🧠 Quick Trivia</h2>
+      <a href="../index.html" class="btn btn-back" data-i18n="btn.back">← Back</a>
+      <h2>🧠 <span data-i18n="trivia.card.title">Quick Trivia</span></h2>
       <div class="score-display">
         <span class="score-value" id="score">0</span>
-        <span>pts</span>
+        <span data-i18n="pts">pts</span>
       </div>
     </div>
 
@@ -47,7 +48,7 @@
 
     <!-- Game Area -->
     <div id="game-area">
-      <div class="question-text" id="question-text">Loading…</div>
+      <div class="question-text" id="question-text" data-i18n="trivia.loading">Loading…</div>
       <div class="answer-grid" id="answer-grid">
         <button class="answer-btn" data-idx="0"></button>
         <button class="answer-btn" data-idx="1"></button>
@@ -55,7 +56,7 @@
         <button class="answer-btn" data-idx="3"></button>
       </div>
       <div class="trivia-streak" style="margin-top:0.5rem;">
-        🔥 Streak: <span id="streak">0</span>
+        <span data-i18n="trivia.streak">🔥 Streak:</span> <span id="streak">0</span>
       </div>
     </div>
   </div>
@@ -63,7 +64,7 @@
   <script src="../js/progress.js"></script>
   <script>
   (() => {
-    const ALL_QUESTIONS = [
+    const ALL_QUESTIONS_EN = [
       { q: "What is the capital of France?",           a: "Paris",           w: ["London","Berlin","Madrid"] },
       { q: "How many sides does a hexagon have?",      a: "6",               w: ["5","7","8"] },
       { q: "Which planet is known as the Red Planet?", a: "Mars",            w: ["Venus","Jupiter","Saturn"] },
@@ -109,6 +110,55 @@
       { q: "Who invented the telephone?",              a: "Alexander Graham Bell", w: ["Edison","Tesla","Marconi"] },
       { q: "Which country has the most natural lakes?", a: "Canada",         w: ["Russia","USA","Brazil"] },
     ];
+
+    const ALL_QUESTIONS_SV = [
+      { q: "Vad är huvudstaden i Frankrike?",              a: "Paris",              w: ["London","Berlin","Madrid"] },
+      { q: "Hur många sidor har en hexagon?",              a: "6",                  w: ["5","7","8"] },
+      { q: "Vilken planet kallas den röda planeten?",      a: "Mars",               w: ["Venus","Jupiter","Saturnus"] },
+      { q: "Vad kallas H₂O vanligtvis?",                   a: "Vatten",             w: ["Väte","Syre","Salt"] },
+      { q: "Vem målade Mona Lisa?",                        a: "Leonardo da Vinci",  w: ["Michelangelo","Rafael","Caravaggio"] },
+      { q: "Hur många kontinenter finns det på jorden?",   a: "7",                  w: ["5","6","8"] },
+      { q: "Vilket är det största havet?",                 a: "Stilla havet",       w: ["Atlanten","Indiska oceanen","Arktis"] },
+      { q: "Vad är det kemiska symbolen för guld?",        a: "Au",                 w: ["Ag","Fe","Go"] },
+      { q: "Vilket land uppfann pizzan?",                  a: "Italien",            w: ["Grekland","USA","Spanien"] },
+      { q: "Hur många ben finns det i människokroppen?",   a: "206",                w: ["189","215","230"] },
+      { q: "Vilken planet är närmast solen?",              a: "Merkurius",          w: ["Venus","Jorden","Mars"] },
+      { q: "Vad är ljusets hastighet (ungefär)?",          a: "300 000 km/s",       w: ["150 000 km/s","600 000 km/s","30 000 km/s"] },
+      { q: "Vem skrev 'Romeo och Julia'?",                 a: "Shakespeare",        w: ["Dickens","Chaucer","Marlowe"] },
+      { q: "Vilket är det minsta landet i världen?",       a: "Vatikanstaten",      w: ["Monaco","San Marino","Liechtenstein"] },
+      { q: "Hur många strängar har en standardgitarr?",    a: "6",                  w: ["4","7","8"] },
+      { q: "Vilket element har symbolen 'O'?",             a: "Syre",               w: ["Osmium","Oganeson","Olympium"] },
+      { q: "Vad är huvudstaden i Japan?",                  a: "Tokyo",              w: ["Kyoto","Osaka","Hiroshima"] },
+      { q: "Vilket år slutade andra världskriget?",        a: "1945",               w: ["1943","1944","1946"] },
+      { q: "Hur många spelare finns det på ett fotbollslag?", a: "11",              w: ["9","10","12"] },
+      { q: "Vilket är det högsta berget i världen?",       a: "Mount Everest",      w: ["K2","Kangchenjunga","Lhotse"] },
+      { q: "Vilket djur kallas 'djungelns kung'?",         a: "Lejon",              w: ["Tiger","Leopard","Gepard"] },
+      { q: "Vad är huvudingrediensen i bröd?",             a: "Mjöl",               w: ["Socker","Jäst","Smör"] },
+      { q: "Hur många dagar är det på ett skottår?",       a: "366",                w: ["364","365","367"] },
+      { q: "Vilken gas absorberar växter från luften?",    a: "Koldioxid",          w: ["Syre","Kväve","Helium"] },
+      { q: "Vem var den första personen att gå på månen?", a: "Neil Armstrong",     w: ["Buzz Aldrin","Jurij Gagarin","John Glenn"] },
+      { q: "Vilket är det största däggdjuret på jorden?",  a: "Blåval",             w: ["Elefant","Giraff","Flodhäst"] },
+      { q: "Hur många färger finns det i en regnbåge?",    a: "7",                  w: ["5","6","8"] },
+      { q: "Vilket land är hem för känguruer?",            a: "Australien",         w: ["Nya Zeeland","Sydafrika","Brasilien"] },
+      { q: "Vad är det hårdaste naturliga ämnet?",         a: "Diamant",            w: ["Kvarts","Safir","Topas"] },
+      { q: "Vilket språk talar brasilianer i första hand?", a: "Portugisiska",      w: ["Spanska","Engelska","Franska"] },
+      { q: "Hur många sekunder är det på en minut?",       a: "60",                 w: ["50","100","30"] },
+      { q: "Vilken planet har ringar runt sig?",           a: "Saturnus",           w: ["Jupiter","Uranus","Neptunus"] },
+      { q: "Vad är Japans valuta?",                        a: "Yen",                w: ["Won","Yuan","Rupie"] },
+      { q: "Vem utvecklade relativitetsteorin?",           a: "Einstein",           w: ["Newton","Hawking","Bohr"] },
+      { q: "Vilken är den längsta floden i världen?",      a: "Nilen",              w: ["Amazonas","Yangtze","Mississippi"] },
+      { q: "Vilket organ pumpar blod runt kroppen?",       a: "Hjärtat",            w: ["Levern","Lungan","Njuren"] },
+      { q: "Vad står 'WWW' för?",                          a: "World Wide Web",     w: ["World Wire Web","Wide World Web","Worldwide Website"] },
+      { q: "Hur många tänder har en frisk vuxen människa?", a: "32",               w: ["28","30","36"] },
+      { q: "Vad är Mexikos nationalspråk?",                a: "Spanska",            w: ["Mexikanska","Portugisiska","Engelska"] },
+      { q: "Vilken frukt kallas 'frukternas kung'?",       a: "Durian",             w: ["Mango","Ananas","Jackfrukt"] },
+      { q: "Hur många planeter finns det i vårt solsystem?", a: "8",               w: ["7","9","10"] },
+      { q: "Vilken form har 3 sidor?",                     a: "Triangel",           w: ["Kvadrat","Pentagon","Hexagon"] },
+      { q: "Vem uppfann telefonen?",                       a: "Alexander Graham Bell", w: ["Edison","Tesla","Marconi"] },
+      { q: "Vilket land har flest naturliga sjöar?",       a: "Kanada",             w: ["Ryssland","USA","Brasilien"] },
+    ];
+
+    const ALL_QUESTIONS = I18n.getLang() === 'sv' ? ALL_QUESTIONS_SV : ALL_QUESTIONS_EN;
 
     const QUESTIONS_PER_ROUND = 10;
     const TIME_PER_Q = 15;
@@ -253,7 +303,7 @@
       const isNew = CBGProgress.saveScore('trivia', score);
       resultScore.textContent = score;
       newBestBadge.classList.toggle('hidden', !isNew);
-      resultDetail.textContent = `✅ ${totalCorrect} / ${QUESTIONS_PER_ROUND} correct`;
+      resultDetail.textContent = `✅ ${totalCorrect} / ${QUESTIONS_PER_ROUND} ${I18n.t('result.correct')}`;
       resultOverlay.classList.remove('hidden');
     }
 

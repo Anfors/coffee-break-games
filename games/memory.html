@@ -5,55 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emoji Memory — Coffee Break Games</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/i18n.js"></script>
 </head>
 <body>
 
   <!-- Countdown Overlay -->
   <div class="countdown-overlay" id="countdown-overlay">
     <div class="countdown-number" id="countdown-num">3</div>
-    <div class="countdown-text">Memorize those emojis!</div>
+    <div class="countdown-text" data-i18n="memory.countdown">Memorize those emojis!</div>
   </div>
 
   <!-- Result Overlay -->
   <div class="result-overlay hidden" id="result-overlay">
-    <h2>All Matched! 🎉</h2>
+    <h2 data-i18n="memory.result-title">All Matched! 🎉</h2>
     <div class="result-score" id="result-score">0</div>
-    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div id="new-best-badge" class="new-best hidden" data-i18n="new-best">🏆 New Best!</div>
     <div class="result-detail" id="result-detail"></div>
     <div class="result-actions">
-      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
-      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+      <button class="btn btn-primary" id="btn-play-again" data-i18n="btn.play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary" data-i18n="btn.back-hub">← Back to Hub</a>
     </div>
   </div>
 
   <div class="game-page">
     <div class="game-header">
-      <a href="../index.html" class="btn btn-back">← Back</a>
-      <h2>🃏 Emoji Memory</h2>
+      <a href="../index.html" class="btn btn-back" data-i18n="btn.back">← Back</a>
+      <h2>🃏 <span data-i18n="memory.card.title">Emoji Memory</span></h2>
       <div class="score-display">
         <span class="score-value" id="score-preview">—</span>
-        <span>pts</span>
+        <span data-i18n="pts">pts</span>
       </div>
     </div>
 
     <div class="memory-info">
       <div class="memory-stat">
         <strong id="moves-count">0</strong>
-        Moves
+        <span data-i18n="memory.moves">Moves</span>
       </div>
       <div class="memory-stat">
         <strong id="timer-display">0:00</strong>
-        Time
+        <span data-i18n="memory.time">Time</span>
       </div>
       <div class="memory-stat">
         <strong id="pairs-found">0</strong>
-        / 8 Pairs
+        <span data-i18n="memory.pairs">/ 8 Pairs</span>
       </div>
     </div>
 
     <div class="memory-grid" id="memory-grid"></div>
 
-    <p style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
+    <p style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:1rem;" data-i18n="memory.formula">
       Score = 1000 − (moves × 10) − (seconds × 2), min 100
     </p>
   </div>
@@ -175,7 +176,7 @@
       const isNew = CBGProgress.saveScore('memory', finalScore);
       resultScore.textContent = finalScore;
       newBestBadge.classList.toggle('hidden', !isNew);
-      resultDetail.textContent = `🃏 ${moves} moves · ⏱ ${formatTime(timerSeconds)}`;
+      resultDetail.textContent = `🃏 ${moves} ${I18n.t('result.moves')} · ⏱ ${formatTime(timerSeconds)}`;
       resultOverlay.classList.remove('hidden');
     }
 

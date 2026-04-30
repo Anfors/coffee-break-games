@@ -5,34 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Word Scramble — Coffee Break Games</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/i18n.js"></script>
 </head>
 <body>
 
   <!-- Countdown Overlay -->
   <div class="countdown-overlay" id="countdown-overlay">
     <div class="countdown-number" id="countdown-num">3</div>
-    <div class="countdown-text">Get ready to unscramble!</div>
+    <div class="countdown-text" data-i18n="word-scramble.countdown">Get ready to unscramble!</div>
   </div>
 
   <!-- Result Overlay -->
   <div class="result-overlay hidden" id="result-overlay">
-    <h2>Round Over!</h2>
+    <h2 data-i18n="word-scramble.result-title">Round Over!</h2>
     <div class="result-score" id="result-score">0</div>
-    <div id="new-best-badge" class="new-best hidden">🏆 New Best!</div>
+    <div id="new-best-badge" class="new-best hidden" data-i18n="new-best">🏆 New Best!</div>
     <div class="result-detail" id="result-detail"></div>
     <div class="result-actions">
-      <button class="btn btn-primary" id="btn-play-again">Play Again</button>
-      <a href="../index.html" class="btn btn-secondary">← Back to Hub</a>
+      <button class="btn btn-primary" id="btn-play-again" data-i18n="btn.play-again">Play Again</button>
+      <a href="../index.html" class="btn btn-secondary" data-i18n="btn.back-hub">← Back to Hub</a>
     </div>
   </div>
 
   <div class="game-page">
     <div class="game-header">
-      <a href="../index.html" class="btn btn-back">← Back</a>
-      <h2>🔤 Word Scramble</h2>
+      <a href="../index.html" class="btn btn-back" data-i18n="btn.back">← Back</a>
+      <h2>🔤 <span data-i18n="word-scramble.card.title">Word Scramble</span></h2>
       <div class="score-display">
         <span class="score-value" id="score">0</span>
-        <span>pts</span>
+        <span data-i18n="pts">pts</span>
       </div>
     </div>
 
@@ -52,17 +53,18 @@
           type="text"
           id="word-input"
           class="word-input"
+          data-i18n-placeholder="word-scramble.placeholder"
           placeholder="Type your answer…"
           autocomplete="off"
           autocorrect="off"
           spellcheck="false"
           disabled
         />
-        <button class="btn btn-primary" id="btn-submit" disabled>Submit</button>
+        <button class="btn btn-primary" id="btn-submit" disabled data-i18n="word-scramble.submit">Submit</button>
       </div>
 
       <div class="skip-row">
-        <button class="btn btn-secondary" id="btn-skip" style="font-size:0.85rem;padding:0.4rem 1rem;" disabled>
+        <button class="btn btn-secondary" id="btn-skip" style="font-size:0.85rem;padding:0.4rem 1rem;" disabled data-i18n="word-scramble.skip">
           Skip (−10 pts)
         </button>
       </div>
@@ -72,13 +74,23 @@
   <script src="../js/progress.js"></script>
   <script>
   (() => {
-    const WORDS = [
+    const WORDS_EN = [
       'BASKET','PURPLE','GARDEN','BRIDGE','CASTLE','DRAGON','FLIGHT','GENTLE',
       'HAMMER','ISLAND','JUNGLE','KITTEN','LADDER','MIRROR','NAPKIN','ORIGIN',
       'PLANET','QUARTZ','RABBIT','SILVER','TIMBER','UNIQUE','VELVET','WINDOW',
       'YELLOW','ZIPPER','ANCHOR','BUTTER','CANDLE','DONKEY','ESCAPE','FABRIC',
       'GRAVEL','HELMET','IMPACT','JEWEL','KETTLE','LEMON','MARBLE','NEEDLE'
     ];
+
+    const WORDS_SV = [
+      'HJÄRTA','CITRON','MUSIK','TIGER','ÄPPLE','CYKEL','BLOMMA','FJÄDER','PAPPER',
+      'SILVER','PLANET','KANIN','ANKARE','SPEGEL','HAMMAR','KAKTUS','SOMMAR','VINTER',
+      'FRUKT','GRODA','STRAND','BJÖRN','MOROT','LAMPA','KLOCKA','FÖNSTER',
+      'FINGER','NACKEN','HJÄLM','GLASS','BRÖD','HÄST','SKOG','FLOD',
+      'EKORRE','LEJON','PINGVIN','ELEFANT','GIRAFF','BANAN'
+    ];
+
+    const WORDS = I18n.getLang() === 'sv' ? WORDS_SV : WORDS_EN;
 
     let score = 0;
     let timeLeft = 60;
@@ -128,7 +140,7 @@
       currentWord = pickWord();
       const sc = scramble(currentWord);
       scrambleEl.textContent = sc;
-      hintEl.textContent = `${currentWord.length} letters`;
+      hintEl.textContent = `${currentWord.length} ${I18n.t('word-scramble.letters')}`;
       inputEl.value = '';
       inputEl.disabled = false;
       btnSubmit.disabled = false;
@@ -181,7 +193,7 @@
       const isNew = CBGProgress.saveScore('word-scramble', score);
       resultScore.textContent = score;
       newBestBadge.classList.toggle('hidden', !isNew);
-      resultDetail.textContent = `✅ ${wordsCorrect} correct · ⏭ ${wordsSkipped} skipped`;
+      resultDetail.textContent = `✅ ${wordsCorrect} ${I18n.t('result.correct')} · ⏭ ${wordsSkipped} ${I18n.t('result.skipped')}`;
       resultOverlay.classList.remove('hidden');
     }
 

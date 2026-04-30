@@ -692,6 +692,31 @@ a { color: var(--accent); text-decoration: none; }
   .color-buttons { max-width: 340px; }
 }
 
+/* ===== Language Switcher ===== */
+.lang-switcher {
+  position: fixed;
+  top: 0.65rem;
+  right: 0.75rem;
+  z-index: 200;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid #4a2c1e;
+  border-radius: var(--radius);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  line-height: 1.4;
+  touch-action: manipulation;
+}
+
+.lang-switcher:hover {
+  border-color: var(--accent);
+  background: #3d2218;
+}
+
 /* ===== Utility ===== */
 .hidden { display: none !important; }
 .text-center { text-align: center; }
